@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 
 namespace AdventOfCode;
-//Time to beat : 00:00:01.6496920
+
 public class Day11
 {
     public void Part1()
@@ -57,38 +57,51 @@ public class Day11
     private const int BLINKS = 75;
     public void Part2()
     {
-        var stones = File.ReadAllText("Inputs/day11.txt").Split(" ").Select(long.Parse).ToList();
+        var stones = File.ReadAllText("Inputs/day11.txt").Split(" ").ToList();
 
         var cl = Stopwatch.StartNew();
-        var result = AAA(stones, 0);
+        var result = stones.Sum(x => CountStoneSplits(x, 0));
 
         cl.Stop();
         Console.WriteLine(cl.Elapsed);
         Console.WriteLine(result);
     }
 
-    private long AAA(List<long> stones, int blink)
+    private static readonly Dictionary<int, Dictionary<string, long>> Cache = new();
+
+    private static long CountStoneSplits(string stone, int blink)
     {
-        if (stones.Count == 1)
+        if (Cache.TryGetValue(blink, out var stones) && stones.TryGetValue(stone, out var value))
         {
-            blink++;
-            if (stones[0] == 0)
-            {
-                return blink == BLINKS ? 1 : AAA([1], blink);
-            }
+            return value;
+        }
+        if (blink == BLINKS)
+        {
+            return 1;
+        }
+        string[] values;
+        if (stone == "0")
+        {
+            values = ["1"];
+        }
+        else if (stone.Length % 2 == 0)
+        {
+            var firstStone = stone[..(stone.Length / 2)];
+            var secondStone = stone[(stone.Length / 2)..];
 
-            var digitCount = (int)Math.Floor(Math.Log10(stones[0])) + 1;
-            if (digitCount % 2 == 0)
-            {
-                var firstNum = (int)Math.Floor(stones[0] / Math.Pow(10, digitCount / 2));
-                var secondNum = stones[0] % (int)Math.Pow(10, digitCount / 2);
-
-                return blink == BLINKS ? 2 : AAA([firstNum, secondNum], blink);
-            }
-
-            return blink == BLINKS ? 1 : AAA([stones[0] * 2024], blink);
+            values = [firstStone, long.Parse(secondStone).ToString()];
+        }
+        else
+        {
+            values = [(long.Parse(stone) * 2024).ToString()];
         }
 
-        return AAA(stones[..(stones.Count / 2)], blink) + AAA(stones[(stones.Count / 2)..], blink);
+        var sum = values.Sum(x => CountStoneSplits(x, blink + 1));
+        if (!Cache.TryAdd(blink, new Dictionary<string, long> { { stone, sum } }))
+        {
+            Cache[blink].Add(stone, sum);
+        }
+
+        return sum;
     }
 }
