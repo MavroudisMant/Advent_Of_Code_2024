@@ -8,5 +8,5 @@ using AdventOfCode.Day6;
 using AdventOfCode.Day7;
 using AdventOfCode.Day8;
 
-var day = new Day9();
+var day = new Day11();
 day.Part2();
