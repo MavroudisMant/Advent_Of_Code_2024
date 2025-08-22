@@ -54,27 +54,27 @@ public class Day11
         // Console.WriteLine(string.Join(" ", stones));
     }
 
-    private const int BLINKS = 25;
+    private const int BLINKS = 75;
     public void Part2()
     {
         var stones = File.ReadAllText("Inputs/day11.txt").Split(" ").Select(long.Parse).ToList();
 
         var cl = Stopwatch.StartNew();
-        stones = AAA(stones, 0);
+        var result = AAA(stones, 0);
 
         cl.Stop();
         Console.WriteLine(cl.Elapsed);
-        Console.WriteLine(stones.Count);
+        Console.WriteLine(result);
     }
 
-    private List<long> AAA(List<long> stones, int blink)
+    private long AAA(List<long> stones, int blink)
     {
         if (stones.Count == 1)
         {
             blink++;
             if (stones[0] == 0)
             {
-                return blink == BLINKS ? [1] : AAA([1], blink);
+                return blink == BLINKS ? 1 : AAA([1], blink);
             }
 
             var digitCount = (int)Math.Floor(Math.Log10(stones[0])) + 1;
@@ -83,14 +83,12 @@ public class Day11
                 var firstNum = (int)Math.Floor(stones[0] / Math.Pow(10, digitCount / 2));
                 var secondNum = stones[0] % (int)Math.Pow(10, digitCount / 2);
 
-                return blink == BLINKS ? [firstNum, secondNum] : AAA([firstNum, secondNum], blink);
+                return blink == BLINKS ? 2 : AAA([firstNum, secondNum], blink);
             }
 
-            return blink == BLINKS ? [stones[0] * 2024] : AAA([stones[0] * 2024], blink);
+            return blink == BLINKS ? 1 : AAA([stones[0] * 2024], blink);
         }
 
-        var f = AAA(stones[..(stones.Count / 2)], blink);
-        f.AddRange(AAA(stones[(stones.Count / 2)..], blink));
-        return f;
+        return AAA(stones[..(stones.Count / 2)], blink) + AAA(stones[(stones.Count / 2)..], blink);
     }
 }
